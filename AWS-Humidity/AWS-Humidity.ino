@@ -90,24 +90,13 @@ void messageHandler(char* topic, byte* payload, unsigned int length)
   Serial.println(message);
 }
 
-void blinkLED()
-{
-  digitalWrite(SUCCESS, LOW);
-  delay(100);
-  digitalWrite(SUCCESS, HIGH);
-  delay(100);
-  digitalWrite(SUCCESS, LOW);
-  delay(100);
-  digitalWrite(SUCCESS, HIGH);
-  delay(100);
-  digitalWrite(SUCCESS, LOW);
-  delay(100);
-  digitalWrite(SUCCESS, HIGH);
-  delay(100);
-  digitalWrite(SUCCESS, LOW);
-  delay(100);
-  digitalWrite(SUCCESS, HIGH);
-  delay(100);
+void blinkLED() {
+  for (int i = 0; i < 4; i++) {
+    digitalWrite(SUCCESS, LOW);
+    delay(100);
+    digitalWrite(SUCCESS, HIGH);
+    delay(100);
+  }
 }
  
 void setup()
