@@ -2,20 +2,32 @@
 #include <WiFiClientSecure.h>
 #include <PubSubClient.h>
 #include <ArduinoJson.h>
+#include <Wire.h>
+#include <Adafruit_GFX.h>
+#include <Adafruit_SSD1306.h>
+
 #include "WiFi.h"
- 
 #include "DHT.h"
+ 
 #define DHTPIN 14   // Digital pin connected to the DHT sensor
 #define DHTTYPE DHT22 // DHT 11
 #define ERROR 13
 #define SUCCESS 27
 #define AWS_IOT_PUBLISH_TOPIC   "esp32/pub"
 #define AWS_IOT_SUBSCRIBE_TOPIC "esp32/sub"
- 
+
+#define SCREEN_WIDTH 128
+#define SCREEN_HEIGHT 64
+#define OLED_RESET -1 
+
+#define SCL_PIN 33
+#define SDA_PIN 25
+
 float h ;
 float t;
  
 DHT dht(DHTPIN, DHTTYPE);
+Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
  
 WiFiClientSecure net = WiFiClientSecure();
 PubSubClient client(net);
@@ -64,6 +76,8 @@ void connectAWS()
   // Subscribe to a topic
   client.subscribe(AWS_IOT_SUBSCRIBE_TOPIC);
   digitalWrite(SUCCESS, HIGH);
+  display.println(F("AWS IoT Connected!"));
+  delay(100);
   Serial.println("AWS IoT Connected!");
 
 }
@@ -101,11 +115,29 @@ void blinkLED() {
  
 void setup()
 {
+
+  Wire.begin(SDA_PIN, SCL_PIN);
+
+  if(!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) {
+  Serial.println(F("SSD1306 allocation failed"));
+  for(;;);
+  }
+
   pinMode(ERROR, OUTPUT);
   pinMode(SUCCESS, OUTPUT);
   Serial.begin(115200);
   connectAWS();
   dht.begin();
+
+display.display();
+delay(2000);
+display.clearDisplay();
+display.setTextSize(2);
+display.setTextColor(SSD1306_WHITE);
+display.setCursor(0, 10);
+display.println(F("Hola, Mundo!"));
+display.display();
+
 }
  
 void loop()
@@ -123,11 +155,22 @@ void loop()
     return;
   }
  
+  display.clearDisplay();
   Serial.print(F("Humidity: "));
   Serial.print(h);
+  display.setCursor(0, 0);
+  display.clearDisplay();
+  display.print(F("Hum:"));
+  display.print(h);
+  display.println("%");
+  display.println();
   Serial.print(F("%  Temperature: "));
   Serial.print(t);
   Serial.println(F("°C "));
+  display.print(F("Tmp:"));
+  display.print(t);
+  display.print("C");
+  display.display();
  
   publishMessage();
   blinkLED();
